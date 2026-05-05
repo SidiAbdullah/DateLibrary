@@ -13,6 +13,8 @@ struct stDate {
     short year;
 };
 
+// -------------------- (1) helper functions --------------------
+
 // -------------------- year --------------------
 
 short getYear() {
@@ -41,6 +43,7 @@ int numberOfMinutesInYear(short year) {
 int numberOfSecondsInYear(short year) {
     return numberOfMinutesInYear(year) * 60;
 }
+
 
 // -------------------- month --------------------
 
@@ -91,6 +94,7 @@ string getMonthName(int month) {
     return months[month - 1];
 }
 
+
 // -------------------- day(s) --------------------
 
 short getDay() {
@@ -99,43 +103,6 @@ short getDay() {
     cin >> day;
     return day;
 }
-
-bool isValidDate(stDate date) {
-    if (date.year < 1)
-        return false;
-
-    if (date.month < 1 || date.month > 12)
-        return false;
-
-    if (date.day < 1 || date.day > numberOfDaysInMonth(date.month, date.year))
-        return false;
-
-    return true;
-}
-
-stDate readFullDate()
-{
-    stDate date;
-
-    do
-    {
-        cout << "\nEnter Day: ";
-        cin >> date.day;
-
-        cout << "Enter Month: ";
-        cin >> date.month;
-
-        cout << "Enter Year: ";
-        cin >> date.year;
-
-        if (!isValidDate(date))
-            cout << "\nInvalid Date, Enter Again:\n";
-
-    } while (!isValidDate(date));
-
-    return date;
-}
-
 
 // Zeller Formula
 int getDayIndex(stDate date) {
@@ -181,7 +148,52 @@ bool isLastDayInMonth(stDate date) {
     return date.day == numberOfDaysInMonth(date.month, date.year);
 }
 
-// -------------------- date --------------------
+
+// -------------------- (2) Validation functions --------------------
+
+bool isValidDate(stDate date) {
+    if (date.year < 1)
+        return false;
+
+    if (date.month < 1 || date.month > 12)
+        return false;
+
+    if (date.day < 1 || date.day > numberOfDaysInMonth(date.month, date.year))
+        return false;
+
+    return true;
+}
+
+
+// -------------------- (3) Date functions --------------------
+
+// ------- Create date -------
+
+stDate readFullDate()
+{
+    stDate date;
+
+    do
+    {
+        cout << "\nEnter Day: ";
+        cin >> date.day;
+
+        cout << "Enter Month: ";
+        cin >> date.month;
+
+        cout << "Enter Year: ";
+        cin >> date.year;
+
+        if (!isValidDate(date))
+            cout << "\nInvalid Date, Enter Again:\n";
+
+    } while (!isValidDate(date));
+
+    return date;
+}
+
+
+// ------- Read date -------
 
 void printDate(stDate date, string separator = "/") {
     cout << "Date is : "
@@ -213,6 +225,9 @@ stDate getDateByPassedDays(int passedDays, int year) {
     date.day = passedDays + 1;
     return date;
 }
+
+
+// ------- Add operations date -------
 
 stDate getDateByAddingOneDay(stDate date) {
     if (isLastDayInMonth(date)) {
@@ -311,6 +326,9 @@ stDate getDateByAddingMillennium(stDate date) {
     return getDateByAddingYears(date, 1000);
 }
 
+
+// ------- Compare operations date -------
+
 bool isDatesEqual(stDate date1, stDate date2) {
     return (
         date1.day == date2.day &&
@@ -343,6 +361,9 @@ bool isDate1AfterDate2(stDate date1, stDate date2) {
 
     return date1.day > date2.day;
 }
+
+
+// ------- Subtract operations date -------
 
 int differenceBetweenDates(stDate date1, stDate date2, bool isIncludingEndDay = false) {
     if (isDate1AfterDate2(date1, date2)) {
@@ -393,8 +414,114 @@ int differenceBetweenDateAndToday(stDate userDate, bool isIncludingEndDay = fals
     return differenceBetweenDates(userDate, today, isIncludingEndDay);
 }
 
+stDate getDateBySubtractingOneDay(stDate date)
+{
+    if (date.day > 1)
+    {
+        --date.day;
+        return date;
+    }
 
-// -------------------- calendar --------------------
+    if (date.month == 1)
+    {
+        --date.year;
+        date.month = 12;
+    }
+    else
+    {
+        --date.month;
+    }
+
+    date.day = numberOfDaysInMonth(date.month, date.year);
+
+    return date;
+}
+
+stDate getDateBySubtractingDays(stDate date, int days)
+{
+    date.day -= days;
+
+    while (date.day <= 0)
+    {
+        date.month--;
+
+        if (date.month < 1)
+        {
+            date.month = 12;
+            date.year--;
+        }
+
+        date.day += numberOfDaysInMonth(date.month, date.year);
+    }
+
+    return date;
+}
+
+stDate getDateBySubtractingOneWeek(stDate date) {
+    return getDateBySubtractingDays(date, 7);
+}
+
+stDate getDateBySubtractingWeeks(stDate date, int weeks) {
+    return getDateBySubtractingDays(date, 7*weeks);
+}
+stDate getDateBySubtractingOneMonth(stDate date)
+{
+    date.month--;
+
+    if (date.month < 1)
+    {
+        date.month = 12;
+        date.year--;
+    }
+
+    short daysInNewMonth = numberOfDaysInMonth(date.month, date.year);
+
+    if (date.day > daysInNewMonth)
+        date.day = daysInNewMonth;
+
+    return date;
+}
+stDate getDateBySubtractingMonths(stDate date, int months)
+{
+    for (int i = 0; i < months; i++)
+    {
+        date = getDateBySubtractingOneMonth(date);
+    }
+
+    return date;
+}
+stDate getDateBySubtractingYears(stDate date, int years)
+{
+    date.year -= years;
+
+    if (date.month == 2 && date.day == 29 && !isLeapYear(date.year))
+        date.day = 28;
+
+    return date;
+}
+
+stDate getDateBySubtractingOneYear(stDate date) {
+    return getDateBySubtractingYears(date, 1);
+}
+
+stDate getDateBySubtractingOneDecade(stDate date) {
+    return getDateBySubtractingYears(date, 10);
+}
+
+stDate getDateBySubtractingDecades(stDate date, int decades) {
+    return getDateBySubtractingYears(date, 10*decades);
+}
+
+stDate getDateBySubtractingOneCentury(stDate date) {
+    return getDateBySubtractingYears(date, 100);
+}
+
+stDate getDateBySubtractingMillennium(stDate date) {
+    return getDateBySubtractingYears(date, 1000);
+}
+
+
+// -------------------- (4) Calendar functions --------------------
 
 void printMonthCalendar(int month, int year) {
     int daysInMonth = numberOfDaysInMonth(month, year);
@@ -434,13 +561,17 @@ void printYearCalendar(int year) {
         printMonthCalendar(i, year);
 }
 
-// -------------------- main --------------------
+
+// -------------------- (5) Main --------------------
 
 int main() {
     stDate date1 = readFullDate();
-    //stDate date2 = readFullDate();
+    while (!isValidDate(date1)) {
+        cout << "Please enter a validate date : ";
+        date1 = readFullDate();
+    }
 
-    cout << "your age in days is : " << differenceBetweenDateAndToday(date1) << " day(s)";
+    printDate(getDateBySubtractingDays(date1, 10));
 
     return 0;
 }
