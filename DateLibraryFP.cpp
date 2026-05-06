@@ -104,29 +104,6 @@ short getDay() {
     return day;
 }
 
-// Zeller Formula
-int getDayIndex(stDate date) {
-    int d = date.day;
-    int m = date.month;
-    int y = date.year;
-
-    if (m < 3) {
-        m += 12;
-        y--;
-    }
-
-    int K = y % 100;
-    int J = y / 100;
-
-    return (d + 13 * (m + 1) / 5 + K + K / 4 + J / 4 + 5 * J) % 7;
-}
-
-// Sunday = 1 ... Saturday = 7
-short getDayOrder(stDate date) {
-    int h = getDayIndex(date);
-    return (h == 0) ? 7 : h;
-}
-
 int numberOfPassedDays(stDate date) {
     int daysBeforeMonth[] = {
         0,31,59,90,120,151,181,212,243,273,304,334
@@ -144,10 +121,69 @@ int numberOfRemainingDays(stDate date) {
     return numberOfDaysInYear(date.year) - numberOfPassedDays(date);
 }
 
-bool isLastDayInMonth(stDate date) {
-    return date.day == numberOfDaysInMonth(date.month, date.year);
+// Zeller Formula
+int getDayIndex(stDate date) {
+    int d = date.day;
+    int m = date.month;
+    int y = date.year;
+
+    if (m < 3) {
+        m += 12;
+        y--;
+    }
+
+    int K = y % 100;
+    int J = y / 100;
+
+    return (d + 13 * (m + 1) / 5 + K + K / 4 + J / 4 + 5 * J) % 7;
 }
 
+// Saturday = 1 ... Friday = 7
+short getDayOrder(stDate date) {
+    int h = getDayIndex(date);
+    return (h == 0) ? 7 : h;
+}
+
+bool isEndOfWeek(stDate date)
+{
+    short dayIndex = getDayOrder(date);
+
+    return dayIndex == 7;
+}
+
+bool isWeekEnd(stDate date)
+{
+    short dayIndex = getDayOrder(date);
+
+    return dayIndex == 1 || dayIndex == 2;
+}
+
+bool isBusinessDay(stDate date)
+{
+    return !isWeekEnd(date);
+}
+
+short daysUntilTheEndOfWeek(stDate date) {
+    short dayIndex = getDayOrder(date);
+
+    return 7 - dayIndex;
+
+}
+
+short daysUntilTheEndOfMonth(stDate date) {
+    short daysInMonth = numberOfDaysInMonth(date.month, date.year);
+
+
+    return daysInMonth - date.day;
+
+}
+
+short daysUntilTheEndOfYear(stDate date)
+{
+    return numberOfDaysInYear(date.year)
+        - numberOfPassedDays(date)
+        - 1;
+}
 
 // -------------------- (2) Validation functions --------------------
 
@@ -481,12 +517,28 @@ stDate getDateBySubtractingOneMonth(stDate date)
 
     return date;
 }
+//stDate getDateBySubtractingMonths(stDate date, int months)
+//{
+//    for (int i = 0; i < months; i++)
+//    {
+//        date = getDateBySubtractingOneMonth(date);
+//    }
+//
+//    return date;
+//}
 stDate getDateBySubtractingMonths(stDate date, int months)
 {
-    for (int i = 0; i < months; i++)
-    {
-        date = getDateBySubtractingOneMonth(date);
-    }
+    int totalMonths = date.year * 12 + (date.month - 1);
+
+    totalMonths -= months;
+
+    date.year = totalMonths / 12;
+    date.month = (totalMonths % 12) + 1;
+
+    short daysInNewMonth = numberOfDaysInMonth(date.month, date.year);
+
+    if (date.day > daysInNewMonth)
+        date.day = daysInNewMonth;
 
     return date;
 }
